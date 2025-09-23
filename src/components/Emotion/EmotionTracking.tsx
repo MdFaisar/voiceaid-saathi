@@ -19,10 +19,10 @@ interface EmotionReading {
 }
 
 const emotions = [
-  { name: "Happy", icon: <Smile className="w-6 h-6" />, color: "text-success", description: "जल्दी खुशी" },
-  { name: "Neutral", icon: <Meh className="w-6 h-6" />, color: "text-muted-foreground", description: "सामान्य" },
-  { name: "Sad", icon: <Frown className="w-6 h-6" />, color: "text-primary", description: "उदास" },
-  { name: "Anxious", icon: <Heart className="w-6 h-6" />, color: "text-warning", description: "चिंतित" },
+  { name: "Happy", icon: <Smile className="w-6 h-6" />, color: "text-success" },
+  { name: "Neutral", icon: <Meh className="w-6 h-6" />, color: "text-muted-foreground" },
+  { name: "Sad", icon: <Frown className="w-6 h-6" />, color: "text-primary" },
+  { name: "Anxious", icon: <Heart className="w-6 h-6" />, color: "text-warning" },
 ];
 
 export const EmotionTracking = ({ onBack }: EmotionTrackingProps) => {

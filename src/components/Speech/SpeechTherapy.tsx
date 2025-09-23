@@ -13,7 +13,6 @@ interface SpeechTherapyProps {
 interface Exercise {
   id: string;
   text: string;
-  hindi: string;
   difficulty: "beginner" | "intermediate" | "advanced";
   category: string;
 }
@@ -22,21 +21,18 @@ const exercises: Exercise[] = [
   {
     id: "1",
     text: "The quick brown fox jumps over the lazy dog",
-    hindi: "तेज भूरी लोमड़ी आलसी कुत्ते के ऊपर कूदती है",
     difficulty: "beginner",
     category: "Pronunciation"
   },
   {
     id: "2", 
     text: "She sells seashells by the seashore",
-    hindi: "वह समुद्र तट पर सीपी बेचती है",
     difficulty: "intermediate",
     category: "Tongue Twisters"
   },
   {
     id: "3",
     text: "Peter Piper picked a peck of pickled peppers",
-    hindi: "पीटर पाइपर ने अचार वाली मिर्च उठाई",
     difficulty: "advanced",
     category: "Advanced Practice"
   }
@@ -246,8 +242,7 @@ export const SpeechTherapy = ({ onBack }: SpeechTherapyProps) => {
           <CardContent className="space-y-6">
             {/* Target Text */}
             <div className="p-6 bg-muted rounded-lg">
-              <p className="text-lg font-medium text-center mb-2">{exercise.text}</p>
-              <p className="text-sm text-muted-foreground text-center">{exercise.hindi}</p>
+              <p className="text-lg font-medium text-center">{exercise.text}</p>
             </div>
 
             {/* Recording Controls */}

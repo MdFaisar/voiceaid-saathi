@@ -18,7 +18,7 @@ export const Header = () => {
             </div>
             <div>
               <h1 className="text-lg font-bold text-foreground">VoiceAid Pro</h1>
-              <p className="text-xs text-muted-foreground">सहायक तकनीक</p>
+              <p className="text-xs text-muted-foreground">Assistive Technology</p>
             </div>
           </div>
         </div>

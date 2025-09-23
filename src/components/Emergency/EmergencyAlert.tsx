@@ -271,7 +271,7 @@ export const EmergencyAlert = ({ onBack }: EmergencyAlertProps) => {
               </Button>
               
               <p className="text-xs text-muted-foreground mt-4">
-                आपातकाल की स्थिति में दबाएं
+                Press only in case of real emergency
               </p>
             </CardContent>
           </Card>
