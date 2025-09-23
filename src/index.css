@@ -9,23 +9,23 @@ All colors MUST be HSL.
 @layer base {
   :root {
     /* Main brand colors - healthcare focused with Indian cultural warmth */
-    --background: 247 251 254;
+    --background: 215 25% 97%;
     --foreground: 213 27% 16%;
 
-    --card: 254 254 254;
+    --card: 0 0% 100%;
     --card-foreground: 213 27% 16%;
 
-    --popover: 254 254 254;
+    --popover: 0 0% 100%;
     --popover-foreground: 213 27% 16%;
 
     /* Primary - Trustworthy medical blue */
     --primary: 210 85% 45%;
-    --primary-foreground: 254 254 254;
+    --primary-foreground: 0 0% 100%;
     --primary-glow: 210 85% 65%;
 
     /* Secondary - Warm accessibility green */
     --secondary: 142 76% 36%;
-    --secondary-foreground: 254 254 254;
+    --secondary-foreground: 0 0% 100%;
 
     /* Muted - Soft backgrounds */
     --muted: 210 40% 98%;
@@ -33,15 +33,15 @@ All colors MUST be HSL.
 
     /* Accent - Emergency orange with high visibility */
     --accent: 24 95% 58%;
-    --accent-foreground: 254 254 254;
+    --accent-foreground: 0 0% 100%;
 
     /* Emergency red - High contrast for alerts */
     --destructive: 0 85% 55%;
-    --destructive-foreground: 254 254 254;
+    --destructive-foreground: 0 0% 100%;
 
     /* Success - Achievement green */
     --success: 142 86% 28%;
-    --success-foreground: 254 254 254;
+    --success-foreground: 0 0% 100%;
 
     /* Warning - Attention yellow */
     --warning: 38 92% 50%;
