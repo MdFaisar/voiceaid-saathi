@@ -6,8 +6,15 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useLanguage, Language } from "@/hooks/useLanguage";
 
 export const Header = () => {
+  const { language, setLanguage, t } = useLanguage();
+
+  const handleLanguageChange = (newLanguage: Language) => {
+    setLanguage(newLanguage);
+  };
+
   return (
     <header className="w-full bg-card border-b border-border shadow-soft">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
@@ -17,8 +24,8 @@ export const Header = () => {
               <span className="text-primary-foreground font-bold text-sm">VA</span>
             </div>
             <div>
-              <h1 className="text-lg font-bold text-foreground">VoiceAid Pro</h1>
-              <p className="text-xs text-muted-foreground">Assistive Technology</p>
+              <h1 className="text-lg font-bold text-foreground">{t('header.title')}</h1>
+              <p className="text-xs text-muted-foreground">{t('header.subtitle')}</p>
             </div>
           </div>
         </div>
@@ -34,8 +41,8 @@ export const Header = () => {
             <DropdownMenuContent align="end" className="w-64">
               <DropdownMenuItem>
                 <div className="flex flex-col space-y-1">
-                  <p className="text-sm font-medium">Speech therapy reminder</p>
-                  <p className="text-xs text-muted-foreground">Time for your daily exercise</p>
+                  <p className="text-sm font-medium">{t('header.speechReminder')}</p>
+                  <p className="text-xs text-muted-foreground">{t('header.timeForExercise')}</p>
                 </div>
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -48,10 +55,18 @@ export const Header = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem>🇮🇳 हिंदी</DropdownMenuItem>
-              <DropdownMenuItem>🇬🇧 English</DropdownMenuItem>
-              <DropdownMenuItem>🇮🇳 தமிழ்</DropdownMenuItem>
-              <DropdownMenuItem>🇮🇳 తెలుగు</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleLanguageChange('hi')}>
+                🇮🇳 हिंदी
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleLanguageChange('en')}>
+                🇬🇧 English
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleLanguageChange('ta')}>
+                🇮🇳 தமிழ்
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleLanguageChange('te')}>
+                🇮🇳 తెలుగు
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -62,10 +77,10 @@ export const Header = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem>Profile Settings</DropdownMenuItem>
-              <DropdownMenuItem>Medical History</DropdownMenuItem>
-              <DropdownMenuItem>Emergency Contacts</DropdownMenuItem>
-              <DropdownMenuItem>Sign Out</DropdownMenuItem>
+              <DropdownMenuItem>{t('header.profile')}</DropdownMenuItem>
+              <DropdownMenuItem>{t('header.medicalHistory')}</DropdownMenuItem>
+              <DropdownMenuItem>{t('header.emergencyContacts')}</DropdownMenuItem>
+              <DropdownMenuItem>{t('header.signOut')}</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

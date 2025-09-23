@@ -4,6 +4,7 @@ import { MainDashboard } from "@/components/Dashboard/MainDashboard";
 import { SpeechTherapy } from "@/components/Speech/SpeechTherapy";
 import { EmotionTracking } from "@/components/Emotion/EmotionTracking";
 import { EmergencyAlert } from "@/components/Emergency/EmergencyAlert";
+import { LanguageProvider } from "@/hooks/useLanguage";
 
 type ActiveModule = 'dashboard' | 'speech' | 'emotion' | 'emergency';
 
@@ -32,10 +33,12 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {activeModule === 'dashboard' && <Header />}
-      {renderActiveModule()}
-    </div>
+    <LanguageProvider>
+      <div className="min-h-screen bg-background">
+        {activeModule === 'dashboard' && <Header />}
+        {renderActiveModule()}
+      </div>
+    </LanguageProvider>
   );
 };
 
