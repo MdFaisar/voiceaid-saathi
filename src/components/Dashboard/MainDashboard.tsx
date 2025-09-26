@@ -1,4 +1,4 @@
-import { Mic, Heart, AlertTriangle, TrendingUp, Calendar, Users } from "lucide-react";
+import { Mic, Heart, AlertTriangle, MessageSquare, TrendingUp, Calendar, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -7,6 +7,7 @@ import heroImage from "@/assets/hero-image.jpg";
 import speechIcon from "@/assets/speech-icon.jpg";
 import emotionIcon from "@/assets/emotion-icon.jpg";
 import emergencyIcon from "@/assets/emergency-icon.jpg";
+import phrasesIcon from "@/assets/phrases-icon.jpg";
 
 interface ModuleCardProps {
   title: string;
@@ -122,7 +123,7 @@ export const MainDashboard = ({ onNavigate }: DashboardProps) => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           <ModuleCard
             title={t('module.speech.title')}
             description={t('module.speech.description')}
@@ -142,6 +143,15 @@ export const MainDashboard = ({ onNavigate }: DashboardProps) => {
             buttonText={t('module.emotion.button')}
             buttonVariant="secondary"
             onClick={() => onNavigate('emotion')}
+          />
+
+          <ModuleCard
+            title={t('module.phrases.title')}
+            description={t('module.phrases.description')}
+            icon={<MessageSquare className="w-4 h-4 text-white" />}
+            image={phrasesIcon}
+            buttonText={t('module.phrases.button')}
+            onClick={() => onNavigate('phrases')}
           />
 
           <ModuleCard

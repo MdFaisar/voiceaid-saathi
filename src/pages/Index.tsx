@@ -4,9 +4,10 @@ import { MainDashboard } from "@/components/Dashboard/MainDashboard";
 import { SpeechTherapy } from "@/components/Speech/SpeechTherapy";
 import { EmotionTracking } from "@/components/Emotion/EmotionTracking";
 import { EmergencyAlert } from "@/components/Emergency/EmergencyAlert";
+import { QuickPhrases } from "@/components/QuickPhrases/QuickPhrases";
 import { LanguageProvider } from "@/hooks/useLanguage";
 
-type ActiveModule = 'dashboard' | 'speech' | 'emotion' | 'emergency';
+type ActiveModule = 'dashboard' | 'speech' | 'emotion' | 'emergency' | 'phrases';
 
 const Index = () => {
   const [activeModule, setActiveModule] = useState<ActiveModule>('dashboard');
@@ -27,6 +28,8 @@ const Index = () => {
         return <EmotionTracking onBack={handleBack} />;
       case 'emergency':
         return <EmergencyAlert onBack={handleBack} />;
+      case 'phrases':
+        return <QuickPhrases onBack={handleBack} />;
       default:
         return <MainDashboard onNavigate={handleNavigate} />;
     }
