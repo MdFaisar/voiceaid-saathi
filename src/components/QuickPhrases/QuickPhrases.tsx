@@ -8,6 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/hooks/useLanguage";
+import { supabase } from "@/integrations/supabase/client";
+import type { User } from "@supabase/supabase-js";
 
 interface QuickPhrasesProps {
   onBack: () => void;
@@ -17,90 +19,170 @@ interface Phrase {
   id: string;
   text: string;
   category: "emergency" | "daily" | "custom";
-  isDefault?: boolean;
+  is_default?: boolean;
+  user_id?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
-const defaultPhrases: Phrase[] = [
-  { id: "1", text: "I need help", category: "emergency", isDefault: true },
-  { id: "2", text: "I am bleeding", category: "emergency", isDefault: true },
-  { id: "3", text: "Call 911", category: "emergency", isDefault: true },
-  { id: "4", text: "I can't breathe", category: "emergency", isDefault: true },
-  { id: "5", text: "I am in pain", category: "emergency", isDefault: true },
-  { id: "6", text: "Thank you", category: "daily", isDefault: true },
-  { id: "7", text: "I am thirsty", category: "daily", isDefault: true },
-  { id: "8", text: "I am hungry", category: "daily", isDefault: true },
-];
-
 export const QuickPhrases = ({ onBack }: QuickPhrasesProps) => {
-  const [phrases, setPhrases] = useState<Phrase[]>(defaultPhrases);
+  const [phrases, setPhrases] = useState<Phrase[]>([]);
   const [newPhrase, setNewPhrase] = useState("");
   const [editingPhrase, setEditingPhrase] = useState<Phrase | null>(null);
   const [activePhrase, setActivePhrase] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
   
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const activePhraseRef = useRef<string | null>(null);
   const speechRef = useRef<SpeechSynthesisUtterance | null>(null);
   const { toast } = useToast();
   const { t } = useLanguage();
 
   useEffect(() => {
-    // Load phrases from localStorage
-    const savedPhrases = localStorage.getItem('quickPhrases');
-    if (savedPhrases) {
-      try {
-        const parsed = JSON.parse(savedPhrases);
-        setPhrases([...defaultPhrases, ...parsed]);
-      } catch (error) {
-        console.error('Error loading saved phrases:', error);
+    // Check if user is authenticated
+    const getUser = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      setUser(user);
+      if (user) {
+        loadPhrases(user.id);
+      } else {
+        setLoading(false);
       }
-    }
+    };
+
+    getUser();
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUser(session?.user ?? null);
+        if (session?.user) {
+          loadPhrases(session.user.id);
+        } else {
+          setPhrases([]);
+          setLoading(false);
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
   }, []);
 
   useEffect(() => {
-    // Save custom phrases to localStorage
-    const customPhrases = phrases.filter(p => !p.isDefault);
-    localStorage.setItem('quickPhrases', JSON.stringify(customPhrases));
-  }, [phrases]);
+    activePhraseRef.current = activePhrase;
+  }, [activePhrase]);
 
-  const addPhrase = () => {
-    if (!newPhrase.trim()) return;
-    
-    const phrase: Phrase = {
-      id: Date.now().toString(),
-      text: newPhrase.trim(),
-      category: "custom"
-    };
-    
-    setPhrases([...phrases, phrase]);
-    setNewPhrase("");
-    setIsDialogOpen(false);
-    
-    toast({
-      title: "Phrase added",
-      description: "Your custom phrase has been saved",
-    });
+  const loadPhrases = async (userId: string) => {
+    try {
+      const { data, error } = await supabase
+        .from('quick_phrases')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error loading phrases:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load phrases",
+          variant: "destructive"
+        });
+      } else {
+        // Type cast the data to match our interface
+        const typedPhrases = (data || []).map(phrase => ({
+          ...phrase,
+          category: phrase.category as "emergency" | "daily" | "custom"
+        }));
+        setPhrases(typedPhrases);
+      }
+    } catch (error) {
+      console.error('Error loading phrases:', error);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const editPhrase = () => {
-    if (!editingPhrase || !editingPhrase.text.trim()) return;
+  const addPhrase = async () => {
+    if (!newPhrase.trim() || !user) return;
     
-    setPhrases(phrases.map(p => 
-      p.id === editingPhrase.id ? editingPhrase : p
-    ));
-    
-    setEditingPhrase(null);
-    setEditDialogOpen(false);
-    
-    toast({
-      title: "Phrase updated",
-      description: "Your phrase has been updated",
-    });
+    try {
+      const { data, error } = await supabase
+        .from('quick_phrases')
+        .insert({
+          user_id: user.id,
+          text: newPhrase.trim(),
+          category: "custom",
+          is_default: false
+        })
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error adding phrase:', error);
+        toast({
+          title: "Error",
+          description: "Failed to add phrase",
+          variant: "destructive"
+        });
+      } else {
+        const typedPhrase = {
+          ...data,
+          category: data.category as "emergency" | "daily" | "custom"
+        };
+        setPhrases([typedPhrase, ...phrases]);
+        setNewPhrase("");
+        setIsDialogOpen(false);
+        
+        toast({
+          title: "Phrase added",
+          description: "Your custom phrase has been saved",
+        });
+      }
+    } catch (error) {
+      console.error('Error adding phrase:', error);
+    }
   };
 
-  const deletePhrase = (phraseId: string) => {
+  const editPhrase = async () => {
+    if (!editingPhrase || !editingPhrase.text.trim() || !user) return;
+    
+    try {
+      const { error } = await supabase
+        .from('quick_phrases')
+        .update({ text: editingPhrase.text })
+        .eq('id', editingPhrase.id)
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('Error updating phrase:', error);
+        toast({
+          title: "Error",
+          description: "Failed to update phrase",
+          variant: "destructive"
+        });
+      } else {
+        setPhrases(phrases.map(p => 
+          p.id === editingPhrase.id ? editingPhrase : p
+        ));
+        
+        setEditingPhrase(null);
+        setEditDialogOpen(false);
+        
+        toast({
+          title: "Phrase updated",
+          description: "Your phrase has been updated",
+        });
+      }
+    } catch (error) {
+      console.error('Error updating phrase:', error);
+    }
+  };
+
+  const deletePhrase = async (phraseId: string) => {
     const phrase = phrases.find(p => p.id === phraseId);
-    if (phrase?.isDefault) {
+    if (phrase?.is_default) {
       toast({
         title: "Cannot delete",
         description: "Default phrases cannot be deleted",
@@ -109,16 +191,37 @@ export const QuickPhrases = ({ onBack }: QuickPhrasesProps) => {
       return;
     }
     
-    setPhrases(phrases.filter(p => p.id !== phraseId));
-    
-    toast({
-      title: "Phrase deleted",
-      description: "The phrase has been removed",
-    });
+    if (!user) return;
+
+    try {
+      const { error } = await supabase
+        .from('quick_phrases')
+        .delete()
+        .eq('id', phraseId)
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('Error deleting phrase:', error);
+        toast({
+          title: "Error",
+          description: "Failed to delete phrase",
+          variant: "destructive"
+        });
+      } else {
+        setPhrases(phrases.filter(p => p.id !== phraseId));
+        
+        toast({
+          title: "Phrase deleted",
+          description: "The phrase has been removed",
+        });
+      }
+    } catch (error) {
+      console.error('Error deleting phrase:', error);
+    }
   };
 
   const speakPhrase = (text: string, phraseId: string) => {
-    if (activePhrase === phraseId) {
+    if (activePhraseRef.current === phraseId) {
       stopSpeaking();
       return;
     }
@@ -127,9 +230,10 @@ export const QuickPhrases = ({ onBack }: QuickPhrasesProps) => {
     stopSpeaking();
     
     setActivePhrase(phraseId);
+    activePhraseRef.current = phraseId;
     
     const speak = () => {
-      if ('speechSynthesis' in window) {
+      if ('speechSynthesis' in window && activePhraseRef.current === phraseId) {
         speechRef.current = new SpeechSynthesisUtterance(text);
         speechRef.current.rate = 0.8;
         speechRef.current.volume = 1;
@@ -137,7 +241,7 @@ export const QuickPhrases = ({ onBack }: QuickPhrasesProps) => {
         
         speechRef.current.onend = () => {
           // Continue speaking if still active
-          if (activePhrase === phraseId) {
+          if (activePhraseRef.current === phraseId) {
             setTimeout(speak, 1000); // 1 second pause between repeats
           }
         };
@@ -148,7 +252,7 @@ export const QuickPhrases = ({ onBack }: QuickPhrasesProps) => {
         };
         
         speechSynthesis.speak(speechRef.current);
-      } else {
+      } else if (!('speechSynthesis' in window)) {
         toast({
           title: "Not supported",
           description: "Speech synthesis is not supported in your browser",
@@ -170,12 +274,8 @@ export const QuickPhrases = ({ onBack }: QuickPhrasesProps) => {
       speechSynthesis.cancel();
     }
     
-    if (intervalRef.current) {
-      clearInterval(intervalRef.current);
-      intervalRef.current = null;
-    }
-    
     setActivePhrase(null);
+    activePhraseRef.current = null;
   };
 
   const getCategoryColor = (category: string) => {
@@ -195,6 +295,37 @@ export const QuickPhrases = ({ onBack }: QuickPhrasesProps) => {
       default: return category;
     }
   };
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-background p-4 flex items-center justify-center">
+        <Card className="max-w-md mx-auto">
+          <CardHeader>
+            <CardTitle>Authentication Required</CardTitle>
+            <CardDescription>
+              Please log in to access your quick phrases.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={onBack} className="w-full">
+              Back to Dashboard
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background p-4 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
+          <p className="mt-4 text-muted-foreground">Loading your phrases...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -325,7 +456,7 @@ export const QuickPhrases = ({ onBack }: QuickPhrasesProps) => {
                           <Play className="w-4 h-4" />
                         )}
                       </Button>
-                      {!phrase.isDefault && (
+                      {!phrase.is_default && (
                         <>
                           <Button
                             variant="outline"

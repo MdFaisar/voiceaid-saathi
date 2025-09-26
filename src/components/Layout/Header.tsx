@@ -1,4 +1,4 @@
-import { Bell, Globe, User, Menu } from "lucide-react";
+import { Bell, Globe, User, Menu, LogOut, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -7,8 +7,15 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useLanguage, Language } from "@/hooks/useLanguage";
+import type { User as SupabaseUser } from "@supabase/supabase-js";
 
-export const Header = () => {
+interface HeaderProps {
+  user: SupabaseUser | null;
+  onSignOut: () => void;
+  onSignIn: () => void;
+}
+
+export const Header = ({ user, onSignOut, onSignIn }: HeaderProps) => {
   const { language, setLanguage, t } = useLanguage();
 
   const handleLanguageChange = (newLanguage: Language) => {
@@ -77,10 +84,25 @@ export const Header = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem>{t('header.profile')}</DropdownMenuItem>
-              <DropdownMenuItem>{t('header.medicalHistory')}</DropdownMenuItem>
-              <DropdownMenuItem>{t('header.emergencyContacts')}</DropdownMenuItem>
-              <DropdownMenuItem>{t('header.signOut')}</DropdownMenuItem>
+              {user ? (
+                <>
+                  <DropdownMenuItem disabled>
+                    {user.email?.split('@')[0] || 'User'}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>{t('header.profile')}</DropdownMenuItem>
+                  <DropdownMenuItem>{t('header.medicalHistory')}</DropdownMenuItem>
+                  <DropdownMenuItem>{t('header.emergencyContacts')}</DropdownMenuItem>
+                  <DropdownMenuItem onClick={onSignOut}>
+                    <LogOut className="h-4 w-4 mr-2" />
+                    {t('header.signOut')}
+                  </DropdownMenuItem>
+                </>
+              ) : (
+                <DropdownMenuItem onClick={onSignIn}>
+                  <LogIn className="h-4 w-4 mr-2" />
+                  Sign In
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
